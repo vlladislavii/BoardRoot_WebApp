@@ -13,6 +13,7 @@ The app manages everything from user registration and secure login, as well as t
 
 1. Kiselar Vladyslav (1231B)
 2. Basiuk Yelyzaveta (1231B)
+3. Emilian Nicolas (Erasmus)
 
 ---
 
