@@ -37,3 +37,6 @@ The app manages everything from user registration and secure login, as well as t
 * **Frontend:** Responsive Design (Bootstrap 5 / CSS Flexbox) - *may be changed*
 * **Database:** PostgreSQL/MySQL
 * **Deployment:** Docker & Docker Compose
+
+### In order to set up the project run, its automatically creates db
+* docker-compose up db -d.

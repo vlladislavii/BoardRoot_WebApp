@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mysql:9.0
+    container_name: boardroot-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: boardroot_db
+      MYSQL_USER: boardroot_user
+      MYSQL_PASSWORD: root
+    volumes:
+      # for later optimisation with docker
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
