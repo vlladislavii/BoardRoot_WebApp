@@ -1,14 +1,66 @@
 services:
+  # MySQL Database
   db:
-    image: mysql:9.0
+    image: mysql:8.0
     container_name: boardroot-db
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: boardroot_db
       MYSQL_USER: boardroot_user
-      MYSQL_PASSWORD: root
+      MYSQL_PASSWORD: boardroot_pass
     volumes:
-      # for later optimisation with docker
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    networks:
+      - boardroot-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: boardroot-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/boardroot_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      JWT_SECRET: BoardRootProductionSecretKeyForJWTAuthMustBeAtLeast256BitsLong
+    volumes:
+      - ./uploads:/app/uploads
+    ports:
+      - "8081:8081"
+    networks:
+      - boardroot-network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: boardroot-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - boardroot-network
+
+volumes:
+  mysql_data:
+
+networks:
+  boardroot-network:
+    driver: bridge

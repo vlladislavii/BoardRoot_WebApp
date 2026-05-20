@@ -1,26 +1,92 @@
-import { useState } from "react";
-import { Navbar } from "./Navbar";
-import { Hero } from "./Hero";
-import { Features } from "./Features";
-import { HowItWorks } from "./HowItWorks";
-import { FeaturedGames } from "./FeaturedGames";
-import { Stats } from "./Stats";
-import { Testimonials } from "./Testimonials";
-import { Footer } from "./Footer";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
+
+// Pages
+import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
+import { HowItWorks } from "./pages/HowItWorks";
+import { Catalog } from "./pages/Catalog";
+import { GameDetails } from "./pages/GameDetails";
+import { TableReservation } from "./pages/TableReservation";
+import { Profile } from "./pages/Profile";
+import { AdminDashboard } from "./pages/Admin/AdminDashboard";
+import { AdminGames } from "./pages/Admin/AdminGames";
+import { AdminBookings } from "./pages/Admin/AdminBookings";
 
 export default function App() {
-    const [menuOpen, setMenuOpen] = useState(false);
-
     return (
-        <div className="min-h-screen bg-[#0f1a0f] text-white overflow-x-hidden">
-            <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-            <Hero />
-            <Stats />
-            <Features />
-            <HowItWorks />
-            <FeaturedGames />
-            <Testimonials />
-            <Footer />
-        </div>
+        <Router>
+            <AuthProvider>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/how-it-works" element={<HowItWorks />} />
+
+                    {/* Protected Routes - Require Authentication */}
+                    <Route
+                        path="/catalog"
+                        element={
+                            <ProtectedRoute>
+                                <Catalog />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/games/:id"
+                        element={
+                            <ProtectedRoute>
+                                <GameDetails />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/reserve"
+                        element={
+                            <ProtectedRoute>
+                                <TableReservation />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile"
+                        element={
+                            <ProtectedRoute>
+                                <Profile />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Admin Routes - Also Protected */}
+                    <Route
+                        path="/admin"
+                        element={
+                            <ProtectedRoute>
+                                <AdminDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/games"
+                        element={
+                            <ProtectedRoute>
+                                <AdminGames />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/bookings"
+                        element={
+                            <ProtectedRoute>
+                                <AdminBookings />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
+            </AuthProvider>
+        </Router>
     );
 }
