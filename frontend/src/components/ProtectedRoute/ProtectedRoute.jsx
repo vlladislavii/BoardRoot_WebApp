@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export function ProtectedRoute({ children }) {
-    const { isAuthenticated, loading } = useAuth();
+export function ProtectedRoute({ children, requireAdmin = false }) {
+    const { isAuthenticated, isAdmin, loading } = useAuth();
     const location = useLocation();
 
     if (loading) {
@@ -15,6 +15,11 @@ export function ProtectedRoute({ children }) {
 
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    // Admin-only routes: clients are sent back to the home page
+    if (requireAdmin && !isAdmin) {
+        return <Navigate to="/" replace />;
     }
 
     return children;

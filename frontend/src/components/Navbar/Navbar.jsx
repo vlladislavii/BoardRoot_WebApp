@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Dice6, User, LogOut, Settings } from "lucide-react";
+import { Menu, X, Dice6, User, LogOut, Settings, Shield } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const authNavLinks = [
@@ -13,7 +13,7 @@ export function Navbar({ menuOpen, setMenuOpen }) {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const { user, isAuthenticated, logout } = useAuth();
+    const { user, isAuthenticated, isAdmin, logout } = useAuth();
     const isHome = location.pathname === "/";
 
     useEffect(() => {
@@ -74,6 +74,18 @@ export function Navbar({ menuOpen, setMenuOpen }) {
                                 {link.label}
                             </Link>
                         ))}
+                        {isAdmin && (
+                            <Link
+                                to="/admin"
+                                className={`flex items-center gap-1.5 hover:text-white transition-colors duration-200 ${
+                                    location.pathname.startsWith("/admin") ? "text-[#c8a84b]" : "text-[#a8c4a8]"
+                                }`}
+                                style={{ fontSize: "0.9rem" }}
+                            >
+                                <Shield className="w-4 h-4" />
+                                Admin
+                            </Link>
+                        )}
                     </nav>
                 )}
 
@@ -100,6 +112,16 @@ export function Navbar({ menuOpen, setMenuOpen }) {
                             {/* Dropdown */}
                             {userMenuOpen && (
                                 <div className="absolute right-0 mt-2 w-48 bg-[#12201a] border border-[#2a4a2a] rounded-xl shadow-xl overflow-hidden">
+                                    {isAdmin && (
+                                        <Link
+                                            to="/admin"
+                                            className="flex items-center gap-3 px-4 py-3 text-[#c8a84b] hover:bg-[#1a2e1a] transition-colors border-b border-[#2a4a2a]"
+                                            onClick={() => setUserMenuOpen(false)}
+                                        >
+                                            <Shield className="w-4 h-4" />
+                                            <span className="text-sm">Admin Panel</span>
+                                        </Link>
+                                    )}
                                     <Link
                                         to="/profile"
                                         className="flex items-center gap-3 px-4 py-3 text-[#a8c4a8] hover:bg-[#1a2e1a] hover:text-white transition-colors"
@@ -165,6 +187,16 @@ export function Navbar({ menuOpen, setMenuOpen }) {
                                     {link.label}
                                 </Link>
                             ))}
+                            {isAdmin && (
+                                <Link
+                                    to="/admin"
+                                    className="flex items-center gap-2 text-[#c8a84b] hover:text-white py-2 border-b border-[#1a2e1a] transition-colors"
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Admin Panel
+                                </Link>
+                            )}
                             <div className="flex flex-col gap-3 pt-2">
                                 <Link
                                     to="/profile"

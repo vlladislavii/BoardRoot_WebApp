@@ -4,6 +4,7 @@ import { Dice6, Package, Calendar, Users, Plus, LogOut, LayoutDashboard, Clipboa
 import { gamesApi } from "../../../services/api";
 
 const genres = ["Strategy", "Family", "Co-op", "Abstract", "Engine Building", "Card Draft", "Party"];
+const complexities = ["Easy", "Medium", "Heavy"];
 
 export function AdminGames() {
     const [games, setGames] = useState([]);
@@ -25,6 +26,7 @@ export function AdminGames() {
         complexity: "Medium",
         designer: "",
         yearPublished: 2020,
+        rulebookUrl: "",
     });
 
     useEffect(() => {
@@ -80,6 +82,7 @@ export function AdminGames() {
             complexity: game.complexity,
             designer: game.designer || "",
             yearPublished: game.yearPublished,
+            rulebookUrl: game.rulebookUrl || "",
         });
         setShowAddModal(true);
     };
@@ -100,6 +103,7 @@ export function AdminGames() {
             complexity: "Medium",
             designer: "",
             yearPublished: 2020,
+            rulebookUrl: "",
         });
     };
 
@@ -367,6 +371,53 @@ export function AdminGames() {
                                     />
                                 </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[#8aab8a] text-sm mb-2">Duration</label>
+                                    <input
+                                        type="text"
+                                        value={newGame.duration}
+                                        onChange={(e) => setNewGame({ ...newGame, duration: e.target.value })}
+                                        placeholder="e.g. 60-90 min"
+                                        className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white placeholder-[#4a6a4a] focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[#8aab8a] text-sm mb-2">Complexity</label>
+                                    <select
+                                        value={newGame.complexity}
+                                        onChange={(e) => setNewGame({ ...newGame, complexity: e.target.value })}
+                                        className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                    >
+                                        {complexities.map((level) => (
+                                            <option key={level} value={level}>{level}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[#8aab8a] text-sm mb-2">Designer</label>
+                                    <input
+                                        type="text"
+                                        value={newGame.designer}
+                                        onChange={(e) => setNewGame({ ...newGame, designer: e.target.value })}
+                                        placeholder="e.g. Klaus Teuber"
+                                        className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white placeholder-[#4a6a4a] focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[#8aab8a] text-sm mb-2">Year Published</label>
+                                    <input
+                                        type="number"
+                                        value={newGame.yearPublished}
+                                        onChange={(e) => setNewGame({ ...newGame, yearPublished: parseInt(e.target.value) || 2020 })}
+                                        min="1900"
+                                        max="2100"
+                                        className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                    />
+                                </div>
+                            </div>
                             <div>
                                 <label className="block text-[#8aab8a] text-sm mb-2">Description</label>
                                 <textarea
@@ -384,6 +435,16 @@ export function AdminGames() {
                                     value={newGame.imageUrl}
                                     onChange={(e) => setNewGame({ ...newGame, imageUrl: e.target.value })}
                                     placeholder="https://..."
+                                    className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white placeholder-[#4a6a4a] focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[#8aab8a] text-sm mb-2">Rulebook URL (optional)</label>
+                                <input
+                                    type="text"
+                                    value={newGame.rulebookUrl}
+                                    onChange={(e) => setNewGame({ ...newGame, rulebookUrl: e.target.value })}
+                                    placeholder="/rulebooks/catan.pdf"
                                     className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white placeholder-[#4a6a4a] focus:outline-none focus:border-[#c8a84b] transition-colors"
                                 />
                             </div>

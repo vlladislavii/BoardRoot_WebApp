@@ -60,11 +60,11 @@ export default function App() {
                         }
                     />
 
-                    {/* Admin Routes - Also Protected */}
+                    {/* Admin Routes - Admin role required */}
                     <Route
                         path="/admin"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute requireAdmin>
                                 <AdminDashboard />
                             </ProtectedRoute>
                         }
@@ -72,7 +72,7 @@ export default function App() {
                     <Route
                         path="/admin/games"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute requireAdmin>
                                 <AdminGames />
                             </ProtectedRoute>
                         }
@@ -80,7 +80,7 @@ export default function App() {
                     <Route
                         path="/admin/bookings"
                         element={
-                            <ProtectedRoute>
+                            <ProtectedRoute requireAdmin>
                                 <AdminBookings />
                             </ProtectedRoute>
                         }
