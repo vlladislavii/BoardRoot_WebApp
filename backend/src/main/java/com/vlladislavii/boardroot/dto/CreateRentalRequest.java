@@ -24,8 +24,8 @@ public class CreateRentalRequest {
     @NotNull(message = "End time is required")
     private LocalTime endTime;
 
-    // Optional table reservation
-    private boolean addTableReservation;
+    // Optional table reservation (Boolean wrapper so a missing/null value is tolerated)
+    private Boolean addTableReservation;
     private Long tableId;
     private Integer numberOfPlayers;
 }

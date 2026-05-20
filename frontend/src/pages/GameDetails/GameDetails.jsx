@@ -44,22 +44,33 @@ export function GameDetails() {
         fetchGame();
     }, [id]);
 
-    // Fetch available tables when date/time changes and table reservation is checked
+    // Fetch ONLY the tables available for the selected date, time slot and group size.
+    // Re-runs whenever the date or time window changes.
     useEffect(() => {
         const fetchTables = async () => {
-            if (!addTableReservation || !rentalDate) return;
+            if (!addTableReservation || !rentalDate || !game || calculateHours() <= 0) {
+                setTables([]);
+                setSelectedTable(null);
+                return;
+            }
             try {
-                const data = await tablesApi.getAll();
+                const data = await tablesApi.getAvailable(
+                    rentalDate,
+                    startTime,
+                    endTime,
+                    game.maxPlayers
+                );
                 setTables(data);
-                if (data.length > 0 && !selectedTable) {
-                    setSelectedTable(data[0].id);
-                }
+                setSelectedTable(data.length > 0 ? data[0].id : null);
             } catch (err) {
-                console.error("Failed to fetch tables:", err);
+                console.error("Failed to fetch available tables:", err);
+                setTables([]);
+                setSelectedTable(null);
             }
         };
         fetchTables();
-    }, [addTableReservation, rentalDate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [addTableReservation, rentalDate, startTime, endTime, game]);
 
     // Calculate rental hours
     const calculateHours = () => {
@@ -94,26 +105,40 @@ export function GameDetails() {
             alert("Please select valid time slots");
             return;
         }
+        if (addTableReservation && !selectedTable) {
+            alert("No table is available for the selected date and time. Choose a different slot or uncheck the table reservation.");
+            return;
+        }
 
         try {
             setSubmitting(true);
+            const wantsTable = addTableReservation && !!selectedTable;
             const rentalRequest = {
                 gameId: game.id,
                 rentalDate,
                 startTime: startTime + ":00",
                 endTime: endTime + ":00",
+                addTableReservation: wantsTable,
             };
 
-            if (addTableReservation && selectedTable) {
+            if (wantsTable) {
                 rentalRequest.tableId = selectedTable;
                 rentalRequest.numberOfPlayers = game.maxPlayers;
             }
 
             await rentalsApi.create(rentalRequest);
             alert(`Rental confirmed! Game: ${game.title}, Date: ${rentalDate}, Time: ${startTime} - ${endTime}`);
+            // Refresh the game so the remaining copy count updates and the form
+            // locks ("Out of stock") once availableCopies reaches zero.
+            try {
+                const updated = await gamesApi.getById(game.id);
+                setGame(updated);
+            } catch (refreshErr) {
+                console.error("Failed to refresh game after rental:", refreshErr);
+            }
         } catch (err) {
             console.error("Failed to create rental:", err);
-            alert("Failed to create rental. Please try again.");
+            alert(err.message || "Failed to create rental. Please try again.");
         } finally {
             setSubmitting(false);
         }
@@ -356,7 +381,7 @@ export function GameDetails() {
                                             </div>
                                             {addTableReservation && tables.length > 0 && (
                                                 <div className="mt-3">
-                                                    <p className="text-[#6a8a6a] text-xs mb-2">Select Table</p>
+                                                    <p className="text-[#6a8a6a] text-xs mb-2">Select an available table</p>
                                                     <select
                                                         value={selectedTable || ""}
                                                         onChange={(e) => setSelectedTable(Number(e.target.value))}
@@ -369,6 +394,11 @@ export function GameDetails() {
                                                         ))}
                                                     </select>
                                                 </div>
+                                            )}
+                                            {addTableReservation && tables.length === 0 && (
+                                                <p className="mt-3 text-red-400 text-xs">
+                                                    No tables available for this date and time slot. Try a different slot.
+                                                </p>
                                             )}
                                         </div>
 

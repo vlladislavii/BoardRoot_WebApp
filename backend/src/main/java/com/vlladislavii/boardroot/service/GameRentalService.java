@@ -1,6 +1,7 @@
 package com.vlladislavii.boardroot.service;
 
 import com.vlladislavii.boardroot.dto.*;
+import com.vlladislavii.boardroot.exception.BusinessException;
 import com.vlladislavii.boardroot.model.*;
 import com.vlladislavii.boardroot.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class GameRentalService {
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
         if (game.getAvailableCopies() <= 0) {
-            throw new RuntimeException("No copies available for this game");
+            throw new BusinessException("No copies available for this game");
         }
 
         // Validate time slots (10am - 8pm)
@@ -68,7 +69,7 @@ public class GameRentalService {
         // Calculate rental hours and price
         long rentalHours = Duration.between(request.getStartTime(), request.getEndTime()).toHours();
         if (rentalHours <= 0) {
-            throw new RuntimeException("End time must be after start time");
+            throw new BusinessException("End time must be after start time");
         }
         BigDecimal totalPrice = game.getPricePerHour().multiply(BigDecimal.valueOf(rentalHours));
 
@@ -88,7 +89,7 @@ public class GameRentalService {
         gameService.decrementAvailableCopies(game.getId());
 
         // Handle table reservation if requested
-        if (request.isAddTableReservation() && request.getTableId() != null) {
+        if (Boolean.TRUE.equals(request.getAddTableReservation()) && request.getTableId() != null) {
             int durationHours = (int) rentalHours;
             CreateTableReservationRequest tableRequest = CreateTableReservationRequest.builder()
                     .tableId(request.getTableId())
@@ -106,13 +107,13 @@ public class GameRentalService {
 
     private void validateTimeSlots(LocalTime startTime, LocalTime endTime) {
         if (startTime.isBefore(OPENING_TIME)) {
-            throw new RuntimeException("Start time cannot be before 10:00 AM");
+            throw new BusinessException("Start time cannot be before 10:00 AM");
         }
         if (endTime.isAfter(CLOSING_TIME)) {
-            throw new RuntimeException("End time cannot be after 8:00 PM");
+            throw new BusinessException("End time cannot be after 8:00 PM");
         }
         if (startTime.isAfter(endTime) || startTime.equals(endTime)) {
-            throw new RuntimeException("Start time must be before end time");
+            throw new BusinessException("Start time must be before end time");
         }
     }
 

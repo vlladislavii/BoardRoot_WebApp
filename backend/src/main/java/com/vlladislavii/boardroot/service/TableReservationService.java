@@ -1,6 +1,7 @@
 package com.vlladislavii.boardroot.service;
 
 import com.vlladislavii.boardroot.dto.*;
+import com.vlladislavii.boardroot.exception.BusinessException;
 import com.vlladislavii.boardroot.model.*;
 import com.vlladislavii.boardroot.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +68,10 @@ public class TableReservationService {
     public List<ClubTableDTO> getAvailableTables(LocalDate date, LocalTime startTime, LocalTime endTime, Integer numberOfPlayers) {
         // Validate time slots
         if (startTime.isBefore(OPENING_TIME) || endTime.isAfter(CLOSING_TIME)) {
-            throw new RuntimeException("Time must be between 10:00 AM and 8:00 PM");
+            throw new BusinessException("Time must be between 10:00 AM and 8:00 PM");
         }
         if (!startTime.isBefore(endTime)) {
-            throw new RuntimeException("Start time must be before end time");
+            throw new BusinessException("Start time must be before end time");
         }
 
         // Get all tables with sufficient capacity
@@ -127,7 +128,7 @@ public class TableReservationService {
 
         // Validate capacity
         if (table.getCapacity() < request.getNumberOfPlayers()) {
-            throw new RuntimeException("Table capacity is insufficient for " + request.getNumberOfPlayers() + " players");
+            throw new BusinessException("Table capacity is insufficient for " + request.getNumberOfPlayers() + " players");
         }
 
         // Calculate end time
@@ -135,12 +136,12 @@ public class TableReservationService {
 
         // Validate time slots
         if (request.getStartTime().isBefore(OPENING_TIME) || endTime.isAfter(CLOSING_TIME)) {
-            throw new RuntimeException("Reservation time must be between 10:00 AM and 8:00 PM");
+            throw new BusinessException("Reservation time must be between 10:00 AM and 8:00 PM");
         }
 
         // Check availability
         if (!isTableAvailable(table.getId(), request.getDate(), request.getStartTime(), endTime)) {
-            throw new RuntimeException("Table is not available during the requested time slot");
+            throw new BusinessException("Table is not available during the requested time slot");
         }
 
         BigDecimal totalPrice = table.getHourlyRate().multiply(BigDecimal.valueOf(request.getDurationHours()));
@@ -171,12 +172,12 @@ public class TableReservationService {
         // Validate that rental time is within table reservation time
         LocalTime tableEndTime = request.getStartTime().plusHours(request.getDurationHours());
         if (rental.getStartTime().isBefore(request.getStartTime()) || rental.getEndTime().isAfter(tableEndTime)) {
-            throw new RuntimeException("Game rental time must be within the table reservation period");
+            throw new BusinessException("Game rental time must be within the table reservation period");
         }
 
         // Check availability
         if (!isTableAvailable(table.getId(), request.getDate(), request.getStartTime(), tableEndTime)) {
-            throw new RuntimeException("Table is not available during the requested time slot");
+            throw new BusinessException("Table is not available during the requested time slot");
         }
 
         BigDecimal totalPrice = table.getHourlyRate().multiply(BigDecimal.valueOf(request.getDurationHours()));
