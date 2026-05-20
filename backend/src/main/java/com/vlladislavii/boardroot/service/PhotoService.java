@@ -32,11 +32,11 @@ public class PhotoService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public PhotoDTO uploadPhoto(Long userId, MultipartFile file, String caption) throws IOException {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    /**
+     * Stores an uploaded file on disk and returns its public URL.
+     * Shared by gallery photo uploads and user avatar uploads.
+     */
+    public String storeFile(MultipartFile file) throws IOException {
         // Create upload directory if it doesn't exist
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
@@ -45,17 +45,29 @@ public class PhotoService {
 
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+        String extension = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
         String filename = UUID.randomUUID().toString() + extension;
 
         // Save file
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath);
 
+        return "/api/photos/files/" + filename;
+    }
+
+    @Transactional
+    public PhotoDTO uploadPhoto(Long userId, MultipartFile file, String caption) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String url = storeFile(file);
+
         // Create photo record
         Photo photo = Photo.builder()
                 .user(user)
-                .url("/api/photos/files/" + filename)
+                .url(url)
                 .caption(caption)
                 .build();
 

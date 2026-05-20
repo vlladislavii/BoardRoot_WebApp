@@ -80,5 +80,42 @@ export const adminApi = {
 // Users API
 export const usersApi = {
     getMe: () => fetchApi("/auth/me"),
-    updateProfile: (data) => fetchApi("/auth/me", { method: "PUT", body: JSON.stringify(data) }),
+    updateProfile: (data) => fetchApi("/users/profile", { method: "PUT", body: JSON.stringify(data) }),
+    // Multipart upload: do NOT set Content-Type so the browser adds the boundary
+    uploadAvatar: async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch(`${API_URL}/users/avatar`, {
+            method: "POST",
+            headers: { ...getAuthHeaders() },
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || "Avatar upload failed");
+        }
+        return data.data;
+    },
+};
+
+// Photos API
+export const photosApi = {
+    getMy: () => fetchApi("/photos/my"),
+    delete: (photoId) => fetchApi(`/photos/${photoId}`, { method: "DELETE" }),
+    // Multipart upload: do NOT set Content-Type so the browser adds the boundary
+    upload: async (file, caption) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        if (caption) formData.append("caption", caption);
+        const response = await fetch(`${API_URL}/photos/upload`, {
+            method: "POST",
+            headers: { ...getAuthHeaders() },
+            body: formData,
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || "Upload failed");
+        }
+        return data.data;
+    },
 };

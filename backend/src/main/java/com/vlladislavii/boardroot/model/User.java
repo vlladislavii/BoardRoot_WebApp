@@ -32,6 +32,9 @@ public class User {
 
     private String phone;
 
+    // URL of the user's profile picture (served via /api/photos/files/...)
+    private String avatarUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.CLIENT;

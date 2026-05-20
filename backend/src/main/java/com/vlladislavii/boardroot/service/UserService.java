@@ -72,6 +72,15 @@ public class UserService {
         return UserDTO.fromEntity(savedUser);
     }
 
+    @Transactional
+    public UserDTO updateAvatar(Long id, String avatarUrl) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatarUrl(avatarUrl);
+        User savedUser = userRepository.save(user);
+        return UserDTO.fromEntity(savedUser);
+    }
+
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }

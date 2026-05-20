@@ -14,6 +14,7 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String phone;
+    private String avatarUrl;
     private String role;
     private LocalDateTime createdAt;
 
@@ -24,6 +25,7 @@ public class UserDTO {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole().name())
                 .createdAt(user.getCreatedAt())
                 .build();

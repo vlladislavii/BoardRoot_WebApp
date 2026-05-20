@@ -24,6 +24,7 @@ public class RentalDTO {
     private String status;
     private BigDecimal totalPrice;
     private boolean hasTableReservation;
+    private TableReservationDTO tableReservation;
     private LocalDateTime createdAt;
 
     public static RentalDTO fromEntity(GameRental rental) {
@@ -40,6 +41,9 @@ public class RentalDTO {
                 .status(rental.getStatus().name())
                 .totalPrice(rental.getTotalPrice())
                 .hasTableReservation(rental.getTableReservation() != null)
+                .tableReservation(rental.getTableReservation() != null
+                        ? TableReservationDTO.fromEntity(rental.getTableReservation())
+                        : null)
                 .createdAt(rental.getCreatedAt())
                 .build();
     }

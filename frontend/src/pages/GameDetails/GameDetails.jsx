@@ -12,6 +12,9 @@ const TIME_SLOTS = [
     "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
 ];
 
+// Shown when a game image URL is missing or fails to load
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&q=80&w=1200";
+
 export function GameDetails() {
     const { id } = useParams();
     const { isAuthenticated } = useAuth();
@@ -145,11 +148,20 @@ export function GameDetails() {
     };
 
     const handleDownloadRulebook = () => {
-        if (game?.rulebookUrl) {
-            window.open(game.rulebookUrl, '_blank');
-        } else {
+        if (!game?.rulebookUrl) {
             alert(`Rulebook for ${game.title} is not available yet.`);
+            return;
         }
+        // Same-origin PDFs (/rulebooks/*.pdf) trigger a real download via the
+        // download attribute; the filename is set to the game title.
+        const link = document.createElement("a");
+        link.href = game.rulebookUrl;
+        link.download = `${game.title} Rulebook.pdf`;
+        link.target = "_blank";
+        link.rel = "noopener";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     if (loading) {
@@ -205,8 +217,9 @@ export function GameDetails() {
                         <div>
                             <div className="relative rounded-2xl overflow-hidden mb-6">
                                 <img
-                                    src={game.imageUrl || "https://images.unsplash.com/photo-1705044219512-a5a3720e6de0?w=800"}
+                                    src={game.imageUrl || FALLBACK_IMAGE}
                                     alt={game.title}
+                                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
                                     className="w-full h-[400px] object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f1a0f]/60 via-transparent to-transparent" />

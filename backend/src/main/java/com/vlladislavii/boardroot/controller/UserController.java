@@ -2,12 +2,15 @@ package com.vlladislavii.boardroot.controller;
 
 import com.vlladislavii.boardroot.dto.*;
 import com.vlladislavii.boardroot.model.User;
+import com.vlladislavii.boardroot.service.PhotoService;
 import com.vlladislavii.boardroot.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -16,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final PhotoService photoService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -44,5 +48,15 @@ public class UserController {
         User user = userService.findByEmail(authentication.getName());
         UserDTO updatedUser = userService.updateUser(user.getId(), updateRequest);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updatedUser));
+    }
+
+    @PostMapping("/avatar")
+    public ResponseEntity<ApiResponse<UserDTO>> uploadAvatar(
+            Authentication authentication,
+            @RequestParam("file") MultipartFile file) throws IOException {
+        User user = userService.findByEmail(authentication.getName());
+        String avatarUrl = photoService.storeFile(file);
+        UserDTO updatedUser = userService.updateAvatar(user.getId(), avatarUrl);
+        return ResponseEntity.ok(ApiResponse.success("Avatar updated successfully", updatedUser));
     }
 }

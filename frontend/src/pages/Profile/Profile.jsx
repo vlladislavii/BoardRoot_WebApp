@@ -4,10 +4,10 @@ import { User, Mail, Phone, Camera, Upload, X, Calendar, Clock, MapPin, Package,
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
-import { rentalsApi, reservationsApi } from "../../services/api";
+import { rentalsApi, reservationsApi, usersApi, photosApi } from "../../services/api";
 
 export function Profile() {
-    const { user: authUser } = useAuth();
+    const { user: authUser, updateUser } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("rentals");
     const [user, setUser] = useState(null);
@@ -17,6 +17,9 @@ export function Profile() {
     const [rentals, setRentals] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
     // Initialize user data from auth context
     useEffect(() => {
@@ -27,7 +30,7 @@ export function Profile() {
                 email: authUser.email || "",
                 phone: authUser.phone || "",
                 memberSince: authUser.createdAt ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently",
-                avatar: null,
+                avatar: authUser.avatarUrl || null,
             };
             setUser(userData);
             setEditForm(userData);
@@ -39,12 +42,14 @@ export function Profile() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [rentalsData, reservationsData] = await Promise.all([
+                const [rentalsData, reservationsData, photosData] = await Promise.all([
                     rentalsApi.getMy().catch(() => []),
                     reservationsApi.getMy().catch(() => []),
+                    photosApi.getMy().catch(() => []),
                 ]);
                 setRentals(rentalsData || []);
                 setReservations(reservationsData || []);
+                setPhotos(photosData || []);
             } catch (err) {
                 console.error("Failed to fetch profile data:", err);
             } finally {
@@ -54,41 +59,68 @@ export function Profile() {
         fetchData();
     }, []);
 
-    const handleAvatarUpload = (e) => {
+    const handleAvatarUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setUser({ ...user, avatar: reader.result });
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+        try {
+            setUploadingAvatar(true);
+            const updated = await usersApi.uploadAvatar(file);
+            setUser((prev) => ({ ...prev, avatar: updated.avatarUrl }));
+            updateUser({ avatarUrl: updated.avatarUrl });
+        } catch (err) {
+            console.error("Failed to upload avatar:", err);
+            alert(err.message || "Failed to upload profile picture. Please try again.");
+        } finally {
+            setUploadingAvatar(false);
+            e.target.value = "";
         }
     };
 
-    // TODO: handle photo uploads using photo API
-    const handlePhotoUpload = (e) => {
+    const handlePhotoUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const newPhoto = {
-                    id: Date.now(),
-                    url: reader.result,
-                    caption: "New gaming session",
-                };
-                setPhotos([newPhoto, ...photos]);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+        try {
+            setUploadingPhoto(true);
+            const saved = await photosApi.upload(file, "New gaming session");
+            setPhotos((prev) => [saved, ...prev]);
+        } catch (err) {
+            console.error("Failed to upload photo:", err);
+            alert(err.message || "Failed to upload photo. Please try again.");
+        } finally {
+            setUploadingPhoto(false);
+            e.target.value = ""; // allow re-selecting the same file
         }
     };
 
-    const handleDeletePhoto = (photoId) => {
-        setPhotos(photos.filter(p => p.id !== photoId));
+    const handleDeletePhoto = async (photoId) => {
+        if (!window.confirm("Delete this photo?")) return;
+        try {
+            await photosApi.delete(photoId);
+            setPhotos((prev) => prev.filter(p => p.id !== photoId));
+        } catch (err) {
+            console.error("Failed to delete photo:", err);
+            alert(err.message || "Failed to delete photo. Please try again.");
+        }
     };
 
-    const handleSaveProfile = () => {
-        setUser(editForm);
-        setIsEditing(false);
+    const handleSaveProfile = async () => {
+        try {
+            setSavingProfile(true);
+            const updated = await usersApi.updateProfile({
+                firstName: editForm.firstName,
+                lastName: editForm.lastName,
+                phone: editForm.phone,
+            });
+            // Reflect the persisted values locally and in the shared auth state
+            setUser({ ...user, firstName: updated.firstName, lastName: updated.lastName, phone: updated.phone });
+            updateUser({ firstName: updated.firstName, lastName: updated.lastName, phone: updated.phone });
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Failed to save profile:", err);
+            alert(err.message || "Failed to save profile. Please try again.");
+        } finally {
+            setSavingProfile(false);
+        }
     };
 
     const statusColors = {
@@ -127,12 +159,13 @@ export function Profile() {
                                         </span>
                                     )}
                                 </div>
-                                <label className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-[#2a4a2a] border border-[#4a6a4a] flex items-center justify-center cursor-pointer hover:bg-[#3a5a3a] transition-colors">
-                                    <Camera className="w-4 h-4 text-[#8aab8a]" />
+                                <label className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-[#2a4a2a] border border-[#4a6a4a] flex items-center justify-center transition-colors ${uploadingAvatar ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-[#3a5a3a]"}`}>
+                                    {uploadingAvatar ? <Loader2 className="w-4 h-4 text-[#8aab8a] animate-spin" /> : <Camera className="w-4 h-4 text-[#8aab8a]" />}
                                     <input
                                         type="file"
                                         accept="image/*"
                                         onChange={handleAvatarUpload}
+                                        disabled={uploadingAvatar}
                                         className="hidden"
                                     />
                                 </label>
@@ -195,12 +228,13 @@ export function Profile() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[#8aab8a] text-sm mb-2">Email</label>
+                                        <label className="block text-[#8aab8a] text-sm mb-2">Email (cannot be changed)</label>
                                         <input
                                             type="email"
                                             value={editForm.email}
-                                            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                            className="w-full bg-[#0f1a0f] border border-[#2a4a2a] rounded-xl py-3 px-4 text-white focus:outline-none focus:border-[#c8a84b] transition-colors"
+                                            readOnly
+                                            disabled
+                                            className="w-full bg-[#0a120a] border border-[#1e3a1e] rounded-xl py-3 px-4 text-[#6a8a6a] cursor-not-allowed"
                                         />
                                     </div>
                                     <div>
@@ -215,10 +249,11 @@ export function Profile() {
                                 </div>
                                 <button
                                     onClick={handleSaveProfile}
-                                    className="mt-4 px-6 py-2 rounded-xl bg-[#c8a84b] text-[#0f1a0f] hover:bg-[#dbbe60] transition-all text-sm"
+                                    disabled={savingProfile}
+                                    className="mt-4 px-6 py-2 rounded-xl bg-[#c8a84b] text-[#0f1a0f] hover:bg-[#dbbe60] transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{ fontWeight: 600 }}
                                 >
-                                    Save Changes
+                                    {savingProfile ? "Saving..." : "Save Changes"}
                                 </button>
                             </div>
                         )}
@@ -265,6 +300,18 @@ export function Profile() {
                                                     <p className="text-[#6a8a6a] text-sm">
                                                         {rental.rentalDate} · {rental.startTime?.slice(0, 5)} - {rental.endTime?.slice(0, 5)}
                                                     </p>
+                                                    {rental.tableReservation ? (
+                                                        <p className="text-[#c8a84b] text-xs mt-1 flex items-center gap-1">
+                                                            <MapPin className="w-3 h-3" />
+                                                            {rental.tableReservation.tableName}
+                                                            {rental.tableReservation.numberOfPlayers ? ` · ${rental.tableReservation.numberOfPlayers} players` : ""}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-[#4a6a4a] text-xs mt-1 flex items-center gap-1">
+                                                            <Package className="w-3 h-3" />
+                                                            Take-home (no table)
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     <span className={`px-3 py-1 rounded-full text-xs border ${statusColors[rental.status] || statusColors.ACTIVE}`}>
@@ -344,13 +391,14 @@ export function Profile() {
                             <div>
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-white text-lg" style={{ fontWeight: 700 }}>My Gaming Photos</h2>
-                                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#c8a84b] text-[#0f1a0f] hover:bg-[#dbbe60] transition-all text-sm cursor-pointer">
-                                        <Upload className="w-4 h-4" />
-                                        Upload Photo
+                                    <label className={`flex items-center gap-2 px-4 py-2 rounded-xl bg-[#c8a84b] text-[#0f1a0f] hover:bg-[#dbbe60] transition-all text-sm ${uploadingPhoto ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                                        {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                        {uploadingPhoto ? "Uploading..." : "Upload Photo"}
                                         <input
                                             type="file"
                                             accept="image/*"
                                             onChange={handlePhotoUpload}
+                                            disabled={uploadingPhoto}
                                             className="hidden"
                                         />
                                     </label>

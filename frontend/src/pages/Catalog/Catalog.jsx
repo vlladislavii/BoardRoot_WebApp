@@ -200,8 +200,9 @@ function GameCard({ game }) {
             {/* Image */}
             <div className="relative h-40 overflow-hidden">
                 <img
-                    src={game.imageUrl || "https://images.unsplash.com/photo-1705044219512-a5a3720e6de0?w=400"}
+                    src={game.imageUrl || "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&q=80&w=1200"}
                     alt={game.title}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&q=80&w=1200"; }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-75"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#12201a] via-transparent to-transparent" />

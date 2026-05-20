@@ -1,1 +1,1 @@
-1. Look, move all the static data from react components to database. So all the changeas and communication must be throught it! so no games const, no mock user const, no static data in here!! Keep it fetching from database!
+1. Look, move all the static databu from react components to database. So all the changeas and communication must be throught it! so no games const, no mock user const, no static data in here!! Keep it fetching from database!

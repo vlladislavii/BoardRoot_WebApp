@@ -88,6 +88,11 @@ export function AuthProvider({ children }) {
         setUser(null);
     };
 
+    // Merge updated fields into the cached user (e.g. after a profile save)
+    const updateUser = (updatedFields) => {
+        setUser((prev) => ({ ...prev, ...updatedFields }));
+    };
+
     const value = {
         user,
         token,
@@ -97,6 +102,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
