@@ -1,0 +1,1 @@
+export { FeaturedGames } from './FeaturedGames';
