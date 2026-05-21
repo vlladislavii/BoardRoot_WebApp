@@ -2,6 +2,7 @@ package com.vlladislavii.boardroot.service;
 
 import com.vlladislavii.boardroot.dto.*;
 import com.vlladislavii.boardroot.exception.BusinessException;
+import com.vlladislavii.boardroot.exception.ResourceNotFoundException;
 import com.vlladislavii.boardroot.model.*;
 import com.vlladislavii.boardroot.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,51 @@ public class TableReservationService {
         return tableRepository.findAll().stream()
                 .map(ClubTableDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ClubTableDTO createTable(CreateTableRequest request) {
+        if (tableRepository.findByName(request.getName()).isPresent()) {
+            throw new BusinessException("A table with this name already exists");
+        }
+        ClubTable table = ClubTable.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .capacity(request.getCapacity())
+                .hourlyRate(request.getHourlyRate())
+                .isAvailable(request.getIsAvailable() == null ? true : request.getIsAvailable())
+                .build();
+        return ClubTableDTO.fromEntity(tableRepository.save(table));
+    }
+
+    @Transactional
+    public ClubTableDTO updateTable(Long id, CreateTableRequest request) {
+        ClubTable table = tableRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+
+        // Block renaming to a name already used by a different table
+        tableRepository.findByName(request.getName())
+                .filter(other -> !other.getId().equals(id))
+                .ifPresent(other -> { throw new BusinessException("A table with this name already exists"); });
+
+        table.setName(request.getName());
+        table.setDescription(request.getDescription());
+        table.setCapacity(request.getCapacity());
+        table.setHourlyRate(request.getHourlyRate());
+        if (request.getIsAvailable() != null) {
+            table.setIsAvailable(request.getIsAvailable());
+        }
+        return ClubTableDTO.fromEntity(tableRepository.save(table));
+    }
+
+    @Transactional
+    public void deleteTable(Long id) {
+        ClubTable table = tableRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        if (reservationRepository.existsByTableId(id)) {
+            throw new BusinessException("Cannot delete a table that has reservations. Mark it unavailable instead.");
+        }
+        tableRepository.delete(table);
     }
 
     public List<ClubTableDTO> getTablesByCapacity(Integer capacity) {

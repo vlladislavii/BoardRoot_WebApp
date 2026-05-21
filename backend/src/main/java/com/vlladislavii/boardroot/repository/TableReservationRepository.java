@@ -20,6 +20,8 @@ public interface TableReservationRepository extends JpaRepository<TableReservati
 
     List<TableReservation> findByDate(LocalDate date);
 
+    boolean existsByTableId(Long tableId);
+
     @Query("SELECT r FROM TableReservation r WHERE r.user.id = :userId ORDER BY r.createdAt DESC")
     List<TableReservation> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 

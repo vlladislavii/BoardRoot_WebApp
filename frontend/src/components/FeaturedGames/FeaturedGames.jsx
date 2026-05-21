@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, Clock, Users, Tag, Loader2 } from "lucide-react";
 import { gamesApi } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 const filters = ["All", "Strategy", "Family", "Co-op", "Abstract", "Card Draft", "Engine Building"];
 
@@ -22,6 +23,7 @@ export function FeaturedGames() {
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
         const fetchGames = async () => {
@@ -45,7 +47,11 @@ export function FeaturedGames() {
             : games.filter((g) => g.genre === activeFilter);
 
     const handleViewAll = () => {
-        navigate("/login");
+        navigate(isAuthenticated ? "/catalog" : "/login");
+    };
+
+    const handleGameAction = (game) => {
+        navigate(isAuthenticated ? `/games/${game.id}` : "/login");
     };
 
     return (
@@ -97,7 +103,7 @@ export function FeaturedGames() {
                 ) : (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filtered.map((game) => (
-                            <GameCard key={game.id} game={game} onAction={() => navigate("/login")} />
+                            <GameCard key={game.id} game={game} onAction={() => handleGameAction(game)} />
                         ))}
                     </div>
                 )}

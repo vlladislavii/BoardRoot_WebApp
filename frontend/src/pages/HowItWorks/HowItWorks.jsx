@@ -3,6 +3,7 @@ import { UserPlus, Search, ShoppingBag, Star, ArrowRight, ArrowLeft } from "luci
 import { Navbar } from "../../components/Navbar";
 import { Footer } from "../../components/Footer";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const steps = [
     {
@@ -62,9 +63,10 @@ const steps = [
 export function HowItWorks() {
     const [menuOpen, setMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     const handleGetStarted = () => {
-        navigate("/login");
+        navigate(isAuthenticated ? "/catalog" : "/register");
     };
 
     return (
@@ -192,10 +194,10 @@ export function HowItWorks() {
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </button>
                                 <button
-                                    onClick={() => navigate("/login")}
+                                    onClick={() => navigate(isAuthenticated ? "/catalog" : "/login")}
                                     className="px-8 py-4 rounded-xl border border-[#c8a84b]/40 text-[#c8a84b] hover:bg-[#c8a84b]/10 transition-all"
                                 >
-                                    Sign In
+                                    {isAuthenticated ? "Browse Catalog" : "Sign In"}
                                 </button>
                             </div>
                         </div>

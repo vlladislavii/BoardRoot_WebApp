@@ -13,6 +13,7 @@ import { TableReservation } from "./pages/TableReservation";
 import { Profile } from "./pages/Profile";
 import { AdminDashboard } from "./pages/Admin/AdminDashboard";
 import { AdminGames } from "./pages/Admin/AdminGames";
+import { AdminTables } from "./pages/Admin/AdminTables";
 import { AdminBookings } from "./pages/Admin/AdminBookings";
 
 export default function App() {
@@ -74,6 +75,14 @@ export default function App() {
                         element={
                             <ProtectedRoute requireAdmin>
                                 <AdminGames />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/tables"
+                        element={
+                            <ProtectedRoute requireAdmin>
+                                <AdminTables />
                             </ProtectedRoute>
                         }
                     />

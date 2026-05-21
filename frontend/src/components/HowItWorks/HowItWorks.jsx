@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Search, ShoppingBag, Star } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const steps = [
     {
@@ -34,13 +35,14 @@ const steps = [
 
 export function HowItWorks() {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     const handleViewCatalog = () => {
-        navigate("/login");
+        navigate(isAuthenticated ? "/catalog" : "/login");
     };
 
     const handleJoinFree = () => {
-        navigate("/login");
+        navigate(isAuthenticated ? "/catalog" : "/register");
     };
 
     return (

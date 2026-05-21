@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Dice6, Package, Calendar, Users, LogOut, LayoutDashboard, ClipboardList, Search, ChevronDown, Check, Loader2 } from "lucide-react";
+import { Dice6, Package, Calendar, Users, LogOut, LayoutDashboard, ClipboardList, Search, ChevronDown, Check, Loader2, Armchair } from "lucide-react";
 import { adminApi, rentalsApi, reservationsApi } from "../../../services/api";
 
 const statuses = ["All", "UPCOMING", "ACTIVE", "COMPLETED", "CANCELLED", "OVERDUE"];
@@ -124,6 +124,12 @@ export function AdminBookings() {
                             <Link to="/admin/games" className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8aab8a] hover:bg-[#12201a] hover:text-white transition-colors">
                                 <Package className="w-5 h-5" />
                                 <span>Games</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/admin/tables" className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8aab8a] hover:bg-[#12201a] hover:text-white transition-colors">
+                                <Armchair className="w-5 h-5" />
+                                <span>Tables</span>
                             </Link>
                         </li>
                         <li>

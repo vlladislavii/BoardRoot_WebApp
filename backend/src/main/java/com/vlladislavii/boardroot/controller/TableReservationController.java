@@ -68,6 +68,32 @@ public class TableReservationController {
         return ResponseEntity.ok(ApiResponse.success(tables));
     }
 
+    @PostMapping("/tables")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create table", description = "Admin only - add a new club table")
+    public ResponseEntity<ApiResponse<ClubTableDTO>> createTable(@Valid @RequestBody CreateTableRequest request) {
+        ClubTableDTO table = reservationService.createTable(request);
+        return ResponseEntity.ok(ApiResponse.success("Table created successfully", table));
+    }
+
+    @PutMapping("/tables/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update table", description = "Admin only - update an existing club table")
+    public ResponseEntity<ApiResponse<ClubTableDTO>> updateTable(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateTableRequest request) {
+        ClubTableDTO table = reservationService.updateTable(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Table updated successfully", table));
+    }
+
+    @DeleteMapping("/tables/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete table", description = "Admin only - delete a club table")
+    public ResponseEntity<ApiResponse<Void>> deleteTable(@PathVariable Long id) {
+        reservationService.deleteTable(id);
+        return ResponseEntity.ok(ApiResponse.success("Table deleted successfully", null));
+    }
+
     @GetMapping("/tables/capacity/{capacity}")
     @Operation(summary = "Get tables by capacity", description = "Get tables with capacity >= specified value")
     public ResponseEntity<ApiResponse<List<ClubTableDTO>>> getTablesByCapacity(@PathVariable Integer capacity) {

@@ -48,6 +48,10 @@ export const tablesApi = {
         fetchApi(`/reservations/tables/available?date=${date}&startTime=${startTime}&endTime=${endTime}&numberOfPlayers=${numberOfPlayers}`),
     checkAvailability: (tableId, date, startTime, endTime) =>
         fetchApi(`/reservations/tables/${tableId}/check?date=${date}&startTime=${startTime}&endTime=${endTime}`),
+    // Admin
+    create: (table) => fetchApi("/reservations/tables", { method: "POST", body: JSON.stringify(table) }),
+    update: (id, table) => fetchApi(`/reservations/tables/${id}`, { method: "PUT", body: JSON.stringify(table) }),
+    delete: (id) => fetchApi(`/reservations/tables/${id}`, { method: "DELETE" }),
 };
 
 // Reservations API

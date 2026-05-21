@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Dice6, Package, Calendar, Users, Plus, LogOut, LayoutDashboard, ClipboardList, Search, Edit, Trash2, X, Minus, Loader2 } from "lucide-react";
+import { Dice6, Package, Calendar, Users, Plus, LogOut, LayoutDashboard, ClipboardList, Search, Edit, Trash2, X, Minus, Loader2, Armchair } from "lucide-react";
 import { gamesApi } from "../../../services/api";
 
 const genres = ["Strategy", "Family", "Co-op", "Abstract", "Engine Building", "Card Draft", "Party"];
@@ -153,6 +153,12 @@ export function AdminGames() {
                             <Link to="/admin/games" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#c8a84b]/10 text-[#c8a84b] border border-[#c8a84b]/30">
                                 <Package className="w-5 h-5" />
                                 <span>Games</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/admin/tables" className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8aab8a] hover:bg-[#12201a] hover:text-white transition-colors">
+                                <Armchair className="w-5 h-5" />
+                                <span>Tables</span>
                             </Link>
                         </li>
                         <li>

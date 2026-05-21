@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Home, Users, ShieldCheck, BookOpen } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const RENT_IMG =
     "https://images.unsplash.com/photo-1739133710791-371277c26001?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib2FyZCUyMGdhbWUlMjBkaWNlJTIwY2FyZHMlMjB0YWJsZXRvcCUyMGNsb3NlJTIwdXB8ZW58MXx8fHwxNzczMjYyOTY2fDA&ixlib=rb-4.1.0&q=80&w=1080";
@@ -9,9 +10,14 @@ const PLAY_IMG =
 
 export function Features() {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
-    const handleAction = () => {
-        navigate("/login");
+    const handleBrowseRentals = () => {
+        navigate(isAuthenticated ? "/catalog" : "/login");
+    };
+
+    const handleBookTable = () => {
+        navigate(isAuthenticated ? "/reserve" : "/login");
     };
 
     return (
@@ -76,7 +82,7 @@ export function Features() {
                                 ))}
                             </ul>
                             <button
-                                onClick={handleAction}
+                                onClick={handleBrowseRentals}
                                 className="mt-7 w-full py-3 rounded-xl border border-[#c8a84b]/40 text-[#c8a84b] hover:bg-[#c8a84b] hover:text-[#0f1a0f] transition-all duration-200 text-sm"
                             >
                                 Browse Rentals
@@ -124,7 +130,7 @@ export function Features() {
                                 ))}
                             </ul>
                             <button
-                                onClick={handleAction}
+                                onClick={handleBookTable}
                                 className="mt-7 w-full py-3 rounded-xl bg-[#c8a84b] text-[#0f1a0f] hover:bg-[#dbbe60] transition-all duration-200 text-sm shadow-lg shadow-[#c8a84b]/20"
                             >
                                 Book a Table
